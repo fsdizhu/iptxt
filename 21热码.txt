@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>六合彩数据分析系统</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --border-radius: 6px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            color: var(--primary-color);
+            margin: 0;
+            padding: 10px 0;
+            font-size: 28px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed #ddd;
+            border-radius: var(--border-radius);
+            text-align: center;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f7fc;
+        }
+
+        .file-upload-label i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        #results-container {
+            display: none;
+            height: 500px;
+        }
+
+        #results-output {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .target-numbers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .target-number-tag {
+            background-color: var(--light-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .target-number-tag button {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            margin-left: 5px;
+            padding: 0;
+            font-size: 12px;
+        }
+
+        .preview-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .preview-item {
+            margin-bottom: 5px;
+        }
+
+        .hit-rate-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .hit-rate-range input {
+            flex: 1;
+        }
+
+        .hit-rate-range span {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .params-grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 15px;
+            }
+            .hit-rate-range {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>六合彩数据分析系统</h2>
+            <div id="debug-console"></div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">数据上传</h3>
+            <div class="form-group">
+                <div class="file-upload">
+                    <label for="csv-upload" class="file-upload-label">
+                        <i>📁</i> 点击选择CSV文件或拖放文件到这里
+                    </label>
+                    <input type="file" id="csv-upload" accept=".csv">
+                </div>
+                <small>文件格式：年份,期号,号码1,号码2,号码3,号码4,号码5,号码6 (UTF-8编码)</small>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">分析参数设置</h3>
+            <div class="params-grid">
+                <div>
+                    <div class="form-group">
+                        <label for="recent_n">从截止期往前分析多少期:</label>
+                        <input type="number" id="recent_n" value="20" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="min_interval">最小分析间隔:</label>
+                        <input type="number" id="min_interval" value="2" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_interval">最大分析间隔:</label>
+                        <input type="number" id="max_interval" value="20" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="min_hits">最小命中次数:</label>
+                        <input type="number" id="min_hits" value="2" min="1">
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>命中率范围 (0-1):</label>
+                        <div class="hit-rate-range">
+                            <input type="number" id="min_hit_rate" step="0.01" value="0.2" min="0" max="1" placeholder="最小值">
+                            <span>至</span>
+                            <input type="number" id="max_hit_rate" step="0.01" value="0.3" min="0" max="1" placeholder="最大值">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_remaining">最大剩余期数:</label>
+                        <input type="number" id="max_remaining" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="sort_by">排序方式:</label>
+                        <select id="sort_by">
+                            <option value="default">默认</option>
+                            <option value="target_predict">目标预测</option>
+                            <option value="target_actual">目标_实际</option>
+                            <option value="predict_accuracy">预测准确度</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label for="end_date">截止期号 (YYYY###, 留空则最新):</label>
+                        <input type="text" id="end_date" placeholder="例如: 2023123">
+                    </div>
+                    <div class="form-group">
+                        <label for="analysis_period">分析期数 (留空则全部):</label>
+                        <input type="number" id="analysis_period" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="target_numbers_input">目标号码 (1-49):</label>
+                        <div style="display: flex;">
+                            <input type="number" id="target_numbers_input" min="1" max="49" placeholder="输入1-49的数字">
+                            <button onclick="addTargetNumber()" style="margin-left: 10px;">添加</button>
+                        </div>
+                        <div class="target-numbers-container" id="target_numbers_display"></div>
+                        <input type="hidden" id="target_numbers">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+            <button onclick="analyzeAndDisplay()">
+                <span id="button-text">开始分析</span>
+                <span id="button-spinner" style="display:none;margin-left:8px;">⌛</span>
+            </button>
+        </div>
+
+        <div class="loading" id="loading-indicator">
+            <div class="spinner"></div>
+            <p>正在分析数据，请稍候...</p>
+        </div>
+
+        <div class="card" id="results-container">
+            <h3 class="card-title">分析结果</h3>
+            <textarea id="results-output" readonly></textarea>
+        </div>
+
+        <div class="footer">
+            <p>六合彩数据分析系统 &copy; 2023 | 数据仅供参考</p>
+        </div>
+    </div>
+
+    <script>
+        // 目标号码管理
+        const targetNumbers = new Set();
+        
+        function addTargetNumber() {
+            const input = document.getElementById('target_numbers_input');
+            const number = parseInt(input.value);
+            
+            if (isNaN(number) || number < 1 || number > 49) {
+                alert("请输入1-49之间的有效数字");
+                return;
+            }
+            
+            if (targetNumbers.has(number)) {
+                alert("该号码已添加");
+                return;
+            }
+            
+            targetNumbers.add(number);
+            updateTargetNumbersDisplay();
+            input.value = "";
+            input.focus();
+        }
+        
+        function removeTargetNumber(number) {
+            targetNumbers.delete(number);
+            updateTargetNumbersDisplay();
+        }
+        
+        function updateTargetNumbersDisplay() {
+            const display = document.getElementById('target_numbers_display');
+            const hiddenInput = document.getElementById('target_numbers');
+            
+            display.innerHTML = "";
+            const numbersArray = Array.from(targetNumbers).sort((a, b) => a - b);
+            hiddenInput.value = numbersArray.join(",");
+            
+            numbersArray.forEach(num => {
+                const tag = document.createElement('div');
+                tag.className = 'target-number-tag';
+                tag.innerHTML = `${num}<button onclick="removeTargetNumber(${num})">×</button>`;
+                display.appendChild(tag);
+            });
+        }
+
+        // 调试工具
+        function debugLog(message) {
+            const consoleElem = document.getElementById('debug-console');
+            consoleElem.innerHTML += `[DEBUG] ${new Date().toLocaleTimeString()}: ${message}\n`;
+            consoleElem.scrollTop = consoleElem.scrollHeight;
+            console.log(message);
+        }
+
+        function clearDebugLog() {
+            document.getElementById('debug-console').innerHTML = '';
+        }
+
+        // 文件上传处理
+        document.getElementById('csv-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            debugLog(`选中文件: ${file.name} (${(file.size/1024).toFixed(2)}KB)`);
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                let csvText = event.target.result;
+                
+                // UTF-8 BOM头检测与处理
+                if (csvText.charCodeAt(0) === 0xFEFF) {
+                    csvText = csvText.substring(1);
+                    debugLog("检测并移除了UTF-8 BOM头");
+                }
+                
+                // 中文内容检测
+                const hasChinese = /[\u4e00-\u9fa5]/.test(csvText);
+                debugLog(`文件内容检测: ${hasChinese ? "包含中文" : "无中文内容"}`);
+                
+                // 编码验证
+                try {
+                    decodeURIComponent(escape(csvText));
+                    processCSVData(csvText);
+                } catch (e) {
+                    alert("编码验证失败！请确保文件是UTF-8编码");
+                    console.error("编码错误:", e);
+                }
+            };
+            reader.onerror = function() {
+                alert("文件读取错误！可能是编码问题");
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        // CSV数据处理
+        function processCSVData(csvText) {
+            clearDebugLog();
+            debugLog(`原始CSV数据长度: ${csvText.length}字符`);
+            
+            try {
+                const data = parseCSV(csvText);
+                debugLog(`成功解析 ${data.length} 条数据`);
+                
+                if (data && data.length > 0) {
+                    window.lotteryData = data;
+                    debugLog("数据已加载就绪");
+                    
+                    // 显示前五期数据
+                    displayFirstFiveIssues(data);
+                } else {
+                    alert("CSV文件解析失败或为空");
+                }
+            } catch (error) {
+                alert("CSV解析错误: " + error.message);
+                console.error(error);
+            }
+        }
+
+        // 显示前五期数据
+        function displayFirstFiveIssues(data) {
+            const resultsOutput = document.getElementById('results-output');
+            let previewText = "=== 前五期开奖号码 ===\n\n";
+            
+            const displayCount = Math.min(5, data.length);
+            for (let i = 0; i < displayCount; i++) {
+                const issue = data[i];
+                previewText += `${issue[0]}年第${issue[1]}期: ${issue[2].join(', ')}\n`;
+            }
+            
+            previewText += "\n等待分析...\n";
+            resultsOutput.value = previewText;
+            document.getElementById('results-container').style.display = 'block';
+        }
+
+        // CSV解析
+        function parseCSV(csvText) {
+            const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+            if (lines.length < 2) {
+                throw new Error("CSV必须包含标题行和至少一行数据");
+            }
+
+            const data = [];
+            const headers = lines[0].split(',').map(header => header.trim());
+            
+            for (let i = 1; i < lines.length; i++) {
+                try {
+                    // 处理可能包含逗号的字段
+                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const cleanedValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+                    
+                    if (cleanedValues.length >= 8) {
+                        const year = parseInt(cleanedValues[0]);
+                        const issue = parseInt(cleanedValues[1]);
+                        const numbers = cleanedValues.slice(2, 8).map(Number);
+                        
+                        if (!isNaN(year) && !isNaN(issue) && numbers.every(n => !isNaN(n) && n >= 1 && n <= 49)) {
+                            data.push([year, issue, numbers]);
+                        } else {
+                            console.warn(`忽略第 ${i+1} 行: 包含无效数据`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`解析第 ${i+1} 行时出错: ${error}`);
+                }
+            }
+            
+            if (data.length === 0) {
+                throw new Error("没有解析到有效数据");
+            }
+            
+            // 按年份和期号排序
+            return data.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+        }
+
+        // UI交互
+        function showLoading(show) {
+            const buttonText = document.getElementById('button-text');
+            const buttonSpinner = document.getElementById('button-spinner');
+            const loadingIndicator = document.getElementById('loading-indicator');
+        
+            if (show) {
+                buttonText.textContent = '分析中...';
+                buttonSpinner.style.display = 'inline-block';
+                loadingIndicator.style.display = 'block';
+            } else {
+                buttonText.textContent = '开始分析';
+                buttonSpinner.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        function analyzeAndDisplay() {
+            if (!window.lotteryData || window.lotteryData.length === 0) {
+                alert('请先上传有效的CSV文件');
+                return;
+            }
+            
+            showLoading(true);
+            setTimeout(() => {
+                try {
+                    const params = getAnalysisParams(window.lotteryData);
+                    if (params) {
+                        const results = analyzeData(window.lotteryData, params);
+                        displayResults(results, params);
+                    }
+                } catch (error) {
+                    alert("分析过程中发生错误: " + error.message);
+                    console.error(error);
+                } finally {
+                    showLoading(false);
+                }
+            }, 100);
+        }
+
+        // 参数获取与验证
+        function getAnalysisParams(data) {
+            try {
+                const params = {
+                    recent_n: parseInt(document.getElementById('recent_n').value),
+                    min_interval: parseInt(document.getElementById('min_interval').value),
+                    max_interval: parseInt(document.getElementById('max_interval').value),
+                    min_hits: parseInt(document.getElementById('min_hits').value),
+                    min_hit_rate: parseFloat(document.getElementById('min_hit_rate').value),
+                    max_hit_rate: parseFloat(document.getElementById('max_hit_rate').value),
+                    max_remaining: parseInt(document.getElementById('max_remaining').value),
+                    sort_by: document.getElementById('sort_by').value,
+                    end_year: data.length > 0 ? data[data.length - 1][0] : null,
+                    end_issue: data.length > 0 ? data[data.length - 1][1] : null,
+                    start_year: data.length > 0 ? data[0][0] : null,
+                    start_issue: data.length > 0 ? data[0][1] : null,
+                    targetNumbers: Array.from(targetNumbers)
+                };
+
+                // 验证命中率范围
+                if (params.min_hit_rate > params.max_hit_rate) {
+                    throw new Error("最低命中率不能大于最高命中率");
+                }
+                if (params.min_hit_rate < 0 || params.max_hit_rate > 1) {
+                    throw new Error("命中率范围必须在0到1之间");
+                }
+
+                // 验证基本参数（更清晰的写法）
+                const validateParam = (value, name, type = "正整数") => {
+                    if (isNaN(value)) throw new Error(`${name}必须是${type}`);
+                 };
+
+                validateParam(params.recent_n, "最近期数");
+                validateParam(params.min_interval, "最小分析间隔");
+                validateParam(params.max_interval, "最大分析间隔");
+                validateParam(params.min_hits, "最小命中次数");
+                validateParam(params.max_remaining, "最大剩余期数");
+
+                if (params.min_interval > params.max_interval) {
+                  throw new Error("最小分析间隔不能大于最大分析间隔");
+                }
+
+                // 处理截止期号
+                const endDateInput = document.getElementById('end_date').value.trim();
+                if (endDateInput) {
+                    if (/^\d{4}\d{1,3}$/.test(endDateInput)) {
+                        params.end_year = parseInt(endDateInput.substring(0, 4));
+                        params.end_issue = parseInt(endDateInput.substring(4));
+                        
+                        // 验证截止期号是否存在
+                        const exists = data.some(item => 
+                            item[0] === params.end_year && item[1] === params.end_issue
+                        );
+                        if (!exists) {
+                            throw new Error(`指定的截止期号 ${params.end_year}年第${params.end_issue}期 不存在`);
+                        }
+                    } else {
+                        throw new Error("截止期号格式错误 (应为YYYY###)");
+                    }
+                }
+
+                // 处理分析期数
+                const analysisPeriodInput = document.getElementById('analysis_period').value.trim();
+                if (analysisPeriodInput) {
+                    params.analysis_period = parseInt(analysisPeriodInput);
+                    if (params.analysis_period < 1 || params.analysis_period > data.length) {
+                        throw new Error(`分析期数应在1到${data.length}之间`);
+                    }
+                }
+
+                // 验证目标号码
+                if (params.targetNumbers.length > 20) {
+                    throw new Error("最多只能选择20个目标号码");
+                }
+
+                // 修改数据量验证逻辑 - 只需大于recent_n和max_interval中的较大值
+                const filteredData = filterDataByDate(data, params);
+                const requiredData = Math.max(params.recent_n, params.max_interval);
+                
+                if (filteredData.length < requiredData) {
+                    throw new Error(`需要至少${requiredData}期数据进行分析 (当前${filteredData.length}期)` +
+                                  `\n(要求: 大于或等于recent_n和max_interval中的较大值)`);
+                }
+
+                console.log("分析参数:", params);
+                return params;
+            } catch (error) {
+                alert("参数错误: " + error.message);
+                console.error("参数验证失败:", error);
+                return null;
+            }
+        }
+
+        // 数据分析
+        function analyzeData(data, params) {
+            // 数据预处理
+            const filteredData = filterDataByDate(data, params);
+            const recentData = filteredData.slice(-params.recent_n);
+            
+            // 初始化统计对象
+            const stats = {
+                targetPredictCounts: {},
+                targetActualCounts: {},
+                triggerTotalCounts: {},
+                lastOccurrence: {},
+                results: []
+            };
+
+            // 第一阶段：全局统计
+            filteredData.forEach((entry, idx) => {
+                entry[2].forEach(num => {
+                    stats.targetActualCounts[num] = (stats.targetActualCounts[num] || 0) + 1;
+                    stats.lastOccurrence[num] = idx;
+                });
+            });
+
+            // 第二阶段：近期数据统计
+            recentData.forEach(entry => {
+                entry[2].forEach(num => {
+                    stats.triggerTotalCounts[num] = (stats.triggerTotalCounts[num] || 0) + 1;
+                });
+            });
+
+            // 第三阶段：间隔分析
+            for (let interval = params.min_interval; interval <= params.max_interval; interval++) {
+                const intervalStats = analyzeInterval(
+                    filteredData, 
+                    recentData, 
+                    interval, 
+                    params,
+                    stats
+                );
+                
+                stats.results = stats.results.concat(intervalStats);
+            }
+
+            // 第四阶段：结果排序
+            sortResults(stats.results, params.sort_by);
+            
+            return {
+                results: stats.results,
+                predictCounts: stats.targetPredictCounts,
+                actualCounts: stats.targetActualCounts,
+                totalPeriods: filteredData.length
+            };
+        }
+
+        function analyzeInterval(data, recentData, interval, params, stats) {
+            const results = [];
+            const triggerIntervalCounts = {};
+            const localStats = {};
+
+            // 分析特定间隔
+            for (let i = 0; i < data.length - interval; i++) {
+                if (!recentData.includes(data[i])) continue;
+                
+                const triggerNumbers = data[i][2];
+                const targetNumbers = data[i + interval][2];
+                
+                // 统计触发次数
+                triggerNumbers.forEach(trigger => {
+                    triggerIntervalCounts[trigger] = (triggerIntervalCounts[trigger] || 0) + 1;
+                    
+                    // 只统计目标号码列表中的号码（如果指定了目标号码）
+                    targetNumbers.forEach(target => {
+                        if (params.targetNumbers.length === 0 || params.targetNumbers.includes(target)) {
+                            if (!localStats[trigger]) localStats[trigger] = {};
+                            localStats[trigger][target] = (localStats[trigger][target] || 0) + 1;
+                            stats.targetPredictCounts[target] = (stats.targetPredictCounts[target] || 0) + 1;
+                        }
+                    });
+                });
+            }
+
+            // 生成结果条目
+            for (const trigger in localStats) {
+                for (const target in localStats[trigger]) {
+                    const hitCount = localStats[trigger][target];
+                    const triggerCount = triggerIntervalCounts[trigger];
+                    const hitRate = triggerCount > 0 ? hitCount / triggerCount : 0;
+                    
+                    // 修改后的命中率范围判断
+                    if (hitCount >= params.min_hits && 
+                        hitRate >= params.min_hit_rate && 
+                        hitRate <= params.max_hit_rate) {
+                        
+                        const currentGap = data.length - 1 - stats.lastOccurrence[trigger];
+                        const remainingGap = interval - currentGap;
+                        
+                        if (remainingGap >= 1 && remainingGap <= params.max_remaining) {
+                            const predictAccuracy = stats.targetPredictCounts[target] > 0 
+                                ? (stats.targetActualCounts[target] || 0) / stats.targetPredictCounts[target] 
+                                : 0;
+                            
+                            results.push({
+                                trigger: parseInt(trigger),
+                                target: parseInt(target),
+                                hitRate: hitRate,
+                                hitCount: hitCount,
+                                triggerTotal: stats.triggerTotalCounts[trigger] || 0,
+                                triggerInterval: triggerCount,
+                                interval: interval,
+                                currentGap: currentGap,
+                                remainingGap: remainingGap,
+                                targetPredict: stats.targetPredictCounts[target] || 0,
+                                targetActual: stats.targetActualCounts[target] || 0,
+                                predictAccuracy: predictAccuracy
+                            });
+                        }
+                    }
+                }
+            }
+            
+            return results;
+        }
+
+        function sortResults(results, sortBy) {
+            const sortFunctions = {
+                'default': (a, b) => a.remainingGap - b.remainingGap || 
+                                      b.predictAccuracy - a.predictAccuracy || 
+                                      b.hitRate - a.hitRate,
+                'target_predict': (a, b) => b.targetPredict - a.targetPredict || 
+                                           a.remainingGap - b.remainingGap,
+                'target_actual': (a, b) => b.targetActual - a.targetActual || 
+                                          a.remainingGap - b.remainingGap,
+                'predict_accuracy': (a, b) => b.predictAccuracy - a.predictAccuracy || 
+                                             a.remainingGap - b.remainingGap
+            };
+            
+            results.sort(sortFunctions[sortBy] || sortFunctions['default']);
+        }
+
+        function filterDataByDate(data, params) {
+            // 如果没有限制分析期数，返回全部数据
+            if (!params.analysis_period) {
+                return data;
+            }
+            
+            // 按分析期数筛选
+            const startIndex = Math.max(0, data.length - params.analysis_period);
+            let filtered = data.slice(startIndex);
+            
+            // 按截止期号筛选
+            if (params.end_year && params.end_issue) {
+                const endIndex = data.findIndex(entry => 
+                    entry[0] === params.end_year && entry[1] === params.end_issue);
+                
+                if (endIndex !== -1) {
+                    filtered = filtered.slice(0, endIndex + 1);
+                }
+            }
+            
+            return filtered;
+        }
+
+        // 结果展示
+        function displayResults(analysisResults, params) {
+            const resultsOutput = document.getElementById('results-output');
+            let outputText = "";
+            
+            // 1. 生成分析摘要
+            outputText += generateAnalysisSummary(analysisResults, params);
+            
+            // 2. 生成详细结果
+            if (analysisResults.results.length > 0) {
+                outputText += generateDetailedResults(analysisResults.results, params);
+                outputText += generateTargetNumberStats(analysisResults, params);
+            } else {
+                outputText += generateNoResultsMessage(params);
+            }
+            
+            // 3. 添加分析元数据
+            outputText += generateAnalysisMetadata(analysisResults, params);
+            
+            resultsOutput.value = outputText;
+            resultsOutput.scrollTop = 0;
+        }
+
+        function generateAnalysisSummary(analysisResults, params) {
+            let summary = "=== 分析参数 ===\n";
+            summary += `截止期号: ${params.end_year}年第${params.end_issue}期\n`;
+            summary += `分析期数范围: ${params.start_year}年第${params.start_issue}期 到 ${params.end_year}年第${params.end_issue}期\n`;
+            summary += `分析数据总量: ${analysisResults.totalPeriods}期\n`;
+            summary += `最近分析期数: ${params.recent_n}期\n`;
+            summary += `间隔分析范围: ${params.min_interval}-${params.max_interval}期\n`;
+            summary += `最小命中次数: ${params.min_hits}次\n`;
+            summary += `命中率范围: ${(params.min_hit_rate * 100).toFixed(1)}%-${(params.max_hit_rate * 100).toFixed(1)}%\n`;
+            summary += `最大剩余期数: ${params.max_remaining}期\n`;
+            
+            if (params.targetNumbers.length > 0) {
+                summary += `目标号码: ${params.targetNumbers.sort((a,b) => a-b).join(", ")}\n`;
+            } else {
+                summary += `目标号码: 全部号码(1-49)\n`;
+            }
+            
+            summary += `排序方式: ${getSortMethodName(params.sort_by)}\n`;
+            summary += `符合条件的组合: ${analysisResults.results.length}个\n\n`;
+            
+            return summary;
+        }
+
+        function getSortMethodName(sortBy) {
+            const names = {
+                'default': '剩余期数优先',
+                'target_predict': '目标预测次数',
+                'target_actual': '目标实际出现次数', 
+                'predict_accuracy': '预测准确率'
+            };
+            return names[sortBy] || sortBy;
+        }
+
+        function generateDetailedResults(results, params) {
+            let outputText = `※ 当前显示剩余期数 ≤ ${params.max_remaining} 的组合 ※\n\n`;
+            
+            results.forEach((item, index) => {
+                // 高亮显示目标号码结果
+                const isTargetNumber = params.targetNumbers.length === 0 || 
+                                      params.targetNumbers.includes(item.target);
+                const targetPrefix = isTargetNumber ? "☆ " : "   ";
+                
+                outputText += `${targetPrefix}组合 ${index + 1}:\n`;
+                outputText += `进度: ${createProgressBar(item.hitCount, item.triggerInterval)}\n`;
+                outputText += `触发号码: ${highlightNumber(item.trigger, 2)} `;
+                outputText += `(近期出现${item.triggerTotal}次, 触发${item.triggerInterval}次)\n`;
+                outputText += `目标号码: ${highlightNumber(item.target, 2)} `;
+                outputText += `(被预测${item.targetPredict}次, 实际${item.targetActual}次, `;
+                outputText += `准确率:${(item.predictAccuracy * 100).toFixed(2)}%)\n`;
+                outputText += `命中率: ${(item.hitRate * 100).toFixed(2)}% `;
+                outputText += `(${item.hitCount}/${item.triggerInterval})\n`;
+                outputText += `间隔: ${item.interval}期 | 剩余: ${item.remainingGap}期\n`;
+                outputText += `${'-'.repeat(40)}\n`;
+            });
+            
+            return outputText;
+        }
+
+        function highlightNumber(num, length) {
+            return String(num).padStart(length, ' ');
+        }
+
+        function createProgressBar(hitCount, total) {
+            const progressLength = 20;
+            const filledLength = Math.round((hitCount / total) * progressLength);
+            const percentage = (hitCount / total * 100).toFixed(0);
+            
+            return '[' + '■'.repeat(filledLength) + 
+                   '□'.repeat(progressLength - filledLength) + '] ' + 
+                   percentage + '%';
+        }
+
+        function generateTargetNumberStats(analysisResults, params) {
+            const targetStats = {};
+            
+            // 统计目标号码数据
+            analysisResults.results.forEach(item => {
+                const target = item.target;
+                if (!targetStats[target]) {
+                    targetStats[target] = {
+                        predictCount: item.targetPredict,
+                        actualCount: item.targetActual,
+                        accuracy: item.predictAccuracy,
+                        occurrence: 0,
+                        intervals: new Set()
+                    };
+                }
+                targetStats[target].occurrence++;
+                targetStats[target].intervals.add(item.interval);
+            });
+            
+            // 转换为数组并排序
+            const targetList = Object.entries(targetStats)
+                .map(([num, stats]) => ({
+                    num: parseInt(num),
+                    ...stats,
+                    intervalRange: getIntervalRange(stats.intervals)
+                }))
+                .sort((a, b) => {
+                    // 优先排序用户选中的目标号码
+                    const aIsTarget = params.targetNumbers.includes(a.num);
+                    const bIsTarget = params.targetNumbers.includes(b.num);
+                    
+                    if (aIsTarget !== bIsTarget) return bIsTarget - aIsTarget;
+                    if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
+                    return b.occurrence - a.occurrence;
+                });
+            
+            // 生成热门目标号码报告
+            let statsText = "\n=== 目标号码统计 ===\n";
+            
+            if (targetList.length > 0) {
+                // 统计选中号码的表现
+                if (params.targetNumbers.length > 0) {
+                    const selectedNumbers = targetList.filter(t => 
+                        params.targetNumbers.includes(t.num));
+                    
+                    if (selectedNumbers.length > 0) {
+                        statsText += "◆ 您选择的号码表现 ◆\n";
+                        selectedNumbers.forEach(target => {
+                            statsText += formatTargetNumberLine(target, true);
+                        });
+                        statsText += "\n";
+                    }
+                }
+                
+                // 全部号码统计
+                statsText += "◆ 全部号码统计 ◆\n";
+                targetList.forEach(target => {
+                    statsText += formatTargetNumberLine(target, false);
+                });
+                
+                // 添加最佳预测号码
+                const bestPredict = targetList[0];
+                statsText += `\n☆ 最佳预测号码: ${bestPredict.num} `;
+                statsText += `(准确率${(bestPredict.accuracy * 100).toFixed(2)}%, `;
+                statsText += `出现${bestPredict.occurrence}次)\n`;
+            } else {
+                statsText += "无符合条件的目标号码统计\n";
+            }
+            
+            return statsText;
+        }
+
+        function formatTargetNumberLine(target, isSelected) {
+            const prefix = isSelected ? "★ " : "   ";
+            const occurrenceText = target.occurrence > 1 ? ` (出现${target.occurrence}次)` : "";
+            
+            return `${prefix}号码 ${String(target.num).padStart(2, ' ')}: ` +
+                   `预测${target.predictCount}次, 实际${target.actualCount}次, ` +
+                   `准确率${(target.accuracy * 100).toFixed(2)}%, ` +
+                   `间隔${target.intervalRange}${occurrenceText}\n`;
+        }
+
+        function getIntervalRange(intervalsSet) {
+            const intervals = Array.from(intervalsSet).sort((a,b) => a-b);
+            if (intervals.length <= 1) return intervals.join("");
+            
+            const range = `${intervals[0]}-${intervals[intervals.length-1]}`;
+            return range.length < intervals.join(",").length ? range : intervals.join(",");
+        }
+
+        function generateNoResultsMessage(params) {
+            let message = "⚠️ 没有找到符合条件的组合\n";
+            message += "可能原因:\n";
+            message += `- 剩余期数 > ${params.max_remaining}\n`;
+            message += `- 命中次数 < ${params.min_hits}\n`;
+            message += `- 命中率不在 ${(params.min_hit_rate * 100).toFixed(1)}%-${(params.max_hit_rate * 100).toFixed(1)}% 范围内\n`;
+            message += "建议尝试调整分析参数\n";
+            return message;
+        }
+
+        function generateAnalysisMetadata(analysisResults, params) {
+            let metadata = "\n=== 分析信息 ===\n";
+            metadata += `分析完成时间: ${new Date().toLocaleString()}\n`;
+            metadata += `数据期数: ${analysisResults.totalPeriods}期\n`;
+            metadata += `参数组合: recent_n=${params.recent_n}, `;
+            metadata += `intervals=${params.min_interval}-${params.max_interval}, `;
+            metadata += `min_hits=${params.min_hits}, `;
+            metadata += `hit_rate=${params.min_hit_rate}-${params.max_hit_rate}\n`;
+            return metadata;
+        }
+    </script>
+</body>
+</html>
